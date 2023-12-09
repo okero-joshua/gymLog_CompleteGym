@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         mWeight = binding.mainWeightEditText;
         mReps = binding.mainRepsEditText;
         mSubmit = binding.mainSubmitButton;
-        mAdmin = findViewById(R.id.textView_admin);
+        mAdmin = binding.textViewAdmin;// previous assignment findViewById(R.id.textView_admin);
 
         mMainDisplay.setMovementMethod(new ScrollingMovementMethod());
 

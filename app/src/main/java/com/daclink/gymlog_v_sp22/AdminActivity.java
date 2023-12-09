@@ -40,6 +40,8 @@ public class AdminActivity extends AppCompatActivity {
 
     int mUserId;
 
+    User mUser;
+
     private  SharedPreferences mPreferences = null;
 
     private Menu menu;
@@ -52,12 +54,17 @@ public class AdminActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
+
+
+        getDatabase();
+        checkForUser();
+        addUserToPreference(mUserId);
+        loginUser(mUserId);
         binding = ActivityAdminBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         //mMainDisplay = binding.AdminActivity;
         mMainDisplay = binding.AdminActivity;
 
-        getDatabase();
         displayUsers();
 
 
@@ -79,10 +86,36 @@ public class AdminActivity extends AppCompatActivity {
                 .build()
                 .GymLogDAO();
     }
+    private void checkForUser() {
+        mUserId= getIntent().getIntExtra(USER_ID_KEY,-1);
+        if(mUserId != -1){
+            return;
+        }
+
+        if(mPreferences == null){
+            getPrefs();
+        }
+        mUserId = mPreferences.getInt(USER_ID_KEY,-1);
+
+        if(mUserId != -1){
+            return;
+        }
+
+        List<User> users = mGymLogDAO.getAllUsers();
+
+        if(users.size()<= 0){
+//            User defaultUser = new User("daclink","dac123");
+//            User altUser = new User("drew", "dac123");
+            User testUser = new User("testuser1","testuser1");
+            User adminUser = new User("admin2", "admin2");
+            mGymLogDAO.insert(testUser,adminUser);
+        }
+    }
 
     //Implement code get all the users and display them in a button
-    public static Intent IntentFactory(Context context) {
-        Intent intent = new Intent(context, AdminActivity.class);
+    public static Intent IntentFactory(Context context, int userId){
+        Intent intent = new Intent (context, AdminActivity.class);
+        intent.putExtra(USER_ID_KEY, userId);
         return intent;
     }
 
@@ -214,6 +247,18 @@ public class AdminActivity extends AppCompatActivity {
             default:
                 return  super.onOptionsItemSelected(item);
         }
+    }
+    private void loginUser(int userId) {
+        mUser = mGymLogDAO.getUserByUserId(userId);
+        addUserToPreference(userId);
+        invalidateOptionsMenu();
+    }
+    public  boolean onPrepareOptionsMenu(Menu menu){
+        if(mUser!=null){
+            MenuItem item = menu.findItem(R.id.userMenuLogout);
+            item.setTitle(mUser.getUserName());
+        }
+        return  super.onPrepareOptionsMenu(menu);
     }
 }
 
